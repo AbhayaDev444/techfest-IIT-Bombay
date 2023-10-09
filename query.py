@@ -37,7 +37,7 @@ async def handle_query_request(ctx: Context, sender: str, msg: QueryTableRequest
         for (
             num,
             status,
-        ) in ctx.storage._data.items()  # pylint: disable=protected-access
+        ) in ctx.storage._data.items()
         if isinstance(num, int)
     }
     available_tables = []

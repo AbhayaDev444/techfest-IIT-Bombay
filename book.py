@@ -1,5 +1,5 @@
 from uagents import Context, Model, Protocol
-from query import TableStatus
+from .query import TableStatus
 
 
 class BookTableRequest(Model):
