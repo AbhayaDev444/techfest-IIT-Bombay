@@ -2,7 +2,83 @@
 
 # Exploratory Statistics and visualization of Data
 
+####AutoEDA using pandas profiling####
+
+#import pandas_profiling
+#report = ProfileReport(df = train)
+#report.to_file('profile_train.pdf')
+
+def continuous_var_summary(x):
+    return pd.Series([x.count(), x.isnull().sum(), x.sum(), x.mean(), x.median(),  
+                      x.std(), x.var(), x.min(), x.quantile(0.01), x.quantile(0.05),
+                          x.quantile(0.10),x.quantile(0.25),x.quantile(0.50),x.quantile(0.75), 
+                              x.quantile(0.90),x.quantile(0.95), x.quantile(0.99),x.max()], 
+                  index = ['N', 'NMISS', 'SUM', 'MEAN','MEDIAN', 'STD', 'VAR', 'MIN', 'P1', 
+                               'P5' ,'P10' ,'P25' ,'P50' ,'P75' ,'P90' ,'P95' ,'P99' ,'MAX'])
+def categorical_var_summary(x):
+    Mode = x.value_counts().sort_values(ascending = False)[0:1].reset_index()
+    return pd.Series([x.count(), x.isnull().sum(), Mode.iloc[0, 0], Mode.iloc[0, 1], 
+                          round(Mode.iloc[0, 1] * 100/x.count(), 2)], 
+                  index = ['N', 'NMISS', 'MODE', 'FREQ', 'PERCENT'])
+def outlier_summary(data):
+    median = np.median(data)
+    upper_quartile = np.percentile(data, 75)
+    lower_quartile = np.percentile(data, 25)
+    iqr = upper_quartile - lower_quartile
+    upper_whisker = data[data<=upper_quartile+1.5*iqr].max()
+    lower_whisker = data[data>=lower_quartile-1.5*iqr].min()
+    outliers_count = data[data>upper_whisker].count()+data[data<lower_whisker].count()
+    out = pd.Series(data = [median,upper_quartile,lower_quartile,iqr,upper_whisker,lower_whisker,outliers_count],index = ['median','upper_quartile','lower_quartile','iqr','upper_whisker','lower_whisker','outliers_count'])
+    return out
+
+# Missing value imputation for categorical and continuous variables
+def missing_imputation(x):
+    if (x.dtypes == 'float64') | (x.dtypes == 'int64'):
+        x = x.fillna(x.median())
+    elif(x.dtypes == 'object'):
+        x = x.fillna(x.mode()[0])
+    return x
+
+
 # Preprocessing and Data Manipulation, standardization
+
+##checking for coefficient  of variance
+
+cv = pd.Series(data.mean()/data.std())
+cv.sort_values(ascending=False)
+
+#Dropping constant columns
+#l=[]
+#for i in data.columns:
+#    if len(data[i].unique())<2:
+#        l.append(i)
+#        print(i,data[i].unique())
+#print(l)
+
+#data.drop(l,axis=1,inplace=True)
+
+#one-hot encoding
+
+#Checking for normality of numerical features
+from scipy.stats import norm
+for i in numcol:
+    sns.distplot(data[i],fit=norm)
+    plt.show()
+
+#Outlier Detetction - X
+for i in numcol_X:
+    plt.figure(figsize=(5,5))
+    sns.boxplot(data_Xtf[i])
+    plt.show()
+
+#Outlier treatment - X
+for i in numcol_X:
+    _, bp = pd.DataFrame.boxplot(data_Xtf[i], return_type='both')
+    whiskers = [whiskers.get_ydata() for whiskers in bp["whiskers"]]
+    data_Xtf[i].clip(lower=whiskers[0][1],upper=whiskers[1][1],inplace=True)
+    sns.boxplot(data_Xtf[i])
+    plt.title(i)
+    plt.show()
 
 # Model Building and fitting
 
